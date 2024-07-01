@@ -225,6 +225,14 @@ export default {
           label: 'Display Name',
           placeholder: 'The display name',
         },
+        subInfoUrl: {
+          label: 'Sub Info URL',
+          placeholder: 'The URL for fetching subscription usage info',
+        },
+        subInfoUserAgent: {
+          label: 'Sub Info User-Agent',
+          placeholder: 'User-Agent for fetching subscription usage info',
+        },
         tag: {
           label: 'Tag(s)',
           placeholder: 'The tag(s) (separated by comma) will be used for grouping.',
@@ -353,7 +361,7 @@ export default {
         'Resolve Domain Operator': {
           label: 'Resolve Domain',
           des: 'Providers(can be controlled by the node field "_no-resolve")',
-          options: ['Google', 'IP-API', 'Cloudflare', 'Ali', 'Tencent'],
+          options: ['Google', 'IP-API', 'Cloudflare', 'Ali', 'Tencent', 'Custom'],
           types: ['IPv4', 'IPv6', 'IP4P'],
           filters: ['Disabled', 'Remove Failed', 'IP Only', 'IPv4 Only', 'IPv6 Only'],
           cache: ['Enabled', 'Disabled'],
@@ -640,6 +648,8 @@ export default {
   iconCollectionPage: {
     iconCollection: 'Icon Collection',
     iconCollectionPlaceholder: 'Please input icon collection url',
+    iconName: 'Icon Name',
+    iconNamePlaceholder: 'Please input icon name',
     iconCollectionKey: 'Icon Collection Key',
     iconCollectionKeyPlaceholder: 'Default Key: icons',
     iconUrlKey: 'Icon url key',
