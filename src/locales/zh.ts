@@ -661,9 +661,9 @@ export default {
         isRequired: '目标平台不能为空',
       },
       includeUnsupportedProxy: {
-        label: '包含官方/商店版不支持的协议',
+        label: '包含官方/商店版/未续费订阅不支持的协议',
         tips: {
-          title: '包含官方/商店版不支持的协议',
+          title: '包含官方/商店版未续费订阅不支持的协议',
           content: 'sing-box: +ShadowsocksR\nQuantumult X: +VLESS'
         }
       },
@@ -783,6 +783,7 @@ export default {
     islr: '卡片右滑呼出',
     isIC: '自定义图标使用原始颜色',
     isDefaultIcon: '恢复默认图标',
+    isShowIcon: '展示图标',
     isEditorCommon: '展示编辑页常用配置',
     isSimpleReicon: '简洁模式展示订阅刷新按钮',
     showFloatingRefreshButton: '显示悬浮刷新按钮',

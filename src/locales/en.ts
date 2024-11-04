@@ -692,10 +692,10 @@ export default {
         placeholder: "Please select a source",
       },
       includeUnsupportedProxy: {
-        label: "Includes protocols not supported by the official/store version",
+        label: "Includes protocols not supported by the official/store/unrenewed subscription version",
         tips: {
           title:
-            "Includes protocols not supported by the official/store version",
+            "Includes protocols not supported by the official/store/unrenewed subscription version",
           content: "sing-box: +ShadowsocksR\nQuantumult X: +VLESS",
         },
       },
@@ -822,6 +822,7 @@ export default {
     islr: "Card right swipe to call out",
     isIC: "Use original color for custom icons",
     isDefaultIcon: "Restore default icon",
+    isShowIcon: 'Show icon',
     isEditorCommon: "Show editor common settings",
     isSimpleReicon: "Show items refresh button",
     showFloatingRefreshButton: "Show floating refresh button",
