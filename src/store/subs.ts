@@ -1,5 +1,6 @@
 import { useSubsApi } from '@/api/subs';
 import { useFilesApi } from '@/api/files';
+import { useShareApi } from '@/api/share';
 import i18n from '@/locales';
 import { useAppNotifyStore } from '@/store/appNotify';
 import { getFlowsUrlList } from '@/utils/getFlowsUrlList';
@@ -8,6 +9,7 @@ import { defineStore } from 'pinia';
 const { t } = i18n.global;
 const subsApi = useSubsApi();
 const filesApi = useFilesApi();
+const shareApi = useShareApi();
 // class TaskProcessor {
 //   #fulfilledIndexes; // 已完成任务的索引集合
 //   #results; // 所有任务的执行结果
@@ -203,6 +205,7 @@ export const useSubsStore = defineStore('subsStore', {
       collections: [],
       flows: {},
       files: [],
+      shares: [],
     };
   },
   getters: {
@@ -221,10 +224,15 @@ export const useSubsStore = defineStore('subsStore', {
       ({ files }): GetOne<any> =>
       (name: string) =>
         files.find(file => file.name === name),
+    hasShares: ({ shares }): boolean => shares.length > 0,
+    getOneShare:
+      ({ shares }): GetOne<Share> =>
+      (token: string) =>
+        shares.find(share => share.token === token),
   },
   actions: {
     async fetchSubsData() {
-      await Promise.all([subsApi.getSubs(), subsApi.getCollections(), filesApi.getWholeFiles()]).then(res => {
+      await Promise.all([subsApi.getSubs(), subsApi.getCollections(), filesApi.getWholeFiles(), shareApi.getShares()]).then(res => {
         if ('data' in res[0].data) {
           this.subs = res[0].data.data.map(i => {
             if (!Array.isArray(i.tag)) {
@@ -244,20 +252,29 @@ export const useSubsStore = defineStore('subsStore', {
         if ('data' in res[2].data) {
           this.files = res[2].data.data;
         }
+        if ('data' in res[3].data) {
+          this.shares = res[3].data.data;
+        }
+      }).catch((err) => {
+        console.log('fetchSubsData err', err);
       });
     },
     async updateOneData(type: string, name: string) {
-      let res;
-      if (type === 'subs') {
-        res = await subsApi.getOne('sub', name);
-      } else if (type === 'collections') {
-        res = await subsApi.getOne('collection', name);
-      } else if (type === 'files') {
-        res = await filesApi.getWholeFile(name);
-      }
-      if (res?.data?.status === 'success') {
-        const index = this[type].findIndex(item => item.name === name);
-        this[type][index] = res.data.data;
+      try {
+        let res;
+        if (type === 'subs') {
+          res = await subsApi.getOne('sub', name);
+        } else if (type === 'collections') {
+          res = await subsApi.getOne('collection', name);
+        } else if (type === 'files') {
+          res = await filesApi.getWholeFile(name);
+        }
+        if (res?.data?.status === 'success') {
+          const index = this[type].findIndex(item => item.name === name);
+          this[type][index] = res.data.data;
+        } 
+      } catch (error) {
+        console.log('updateOneData error', error);
       }
     },
     async fetchFlows(sub?: Sub[]) {
@@ -309,15 +326,19 @@ export const useSubsStore = defineStore('subsStore', {
       // }
     },
     async deleteSub(type: SubsType, name: string) {
-      const { showNotify } = useAppNotifyStore();
+      try {
+        const { showNotify } = useAppNotifyStore();
 
-      const { data } = await subsApi.deleteSub(type, name);
-      if (data.status === 'success') {
-        await this.fetchSubsData();
-        showNotify({
-          type: 'danger',
-          title: t('subPage.deleteSub.succeedNotify'),
-        });
+        const { data } = await subsApi.deleteSub(type, name);
+        if (data.status === 'success') {
+          await this.fetchSubsData();
+          showNotify({
+            type: 'danger',
+            title: t('subPage.deleteSub.succeedNotify'),
+          });
+        } 
+      } catch (error) {
+        console.log('deleteSub error', error);
       }
     },
     async fetchFiles() {
@@ -325,18 +346,63 @@ export const useSubsStore = defineStore('subsStore', {
         if ('data' in res[0].data) {
           this.files = res[0].data.data;
         }
+      }).catch((err) => {
+        console.log('fetchFiles err', err);
       });
     },
-
     async deleteFile(name: string) {
-      const { showNotify } = useAppNotifyStore();
+      try {
+        const { showNotify } = useAppNotifyStore();
 
-      const { data } = await filesApi.deleteFile(name);
-      if (data.status === 'success') {
-        await this.fetchFiles();
+        const { data } = await filesApi.deleteFile(name);
+        if (data.status === 'success') {
+          await this.fetchFiles();
+          showNotify({
+            type: 'danger',
+            title: t('filePage.deleteFile.succeedNotify'),
+          });
+        } 
+      } catch (error) {
+        console.log('deleteFile error', error);
+      }
+    },
+    async fetchShareData() {
+      Promise.all([shareApi.getShares()]).then((res) => {
+        if ("data" in res[0].data) {
+          console.log('res[0].data.data', res[0].data.data);
+          this.shares = res[0].data.data;
+        }
+      }).catch((err) => {
+        console.log('fetchShareData err', err);
+      });
+    },
+    async deleteShare(token: string, isShowNotify: boolean = true) {
+      try {
+        const { showNotify } = useAppNotifyStore();
+
+        const { data } = await shareApi.deleteShare(token);
+        if (data.status === "success") {
+          await this.fetchShareData();
+          isShowNotify && showNotify({
+            type: "danger",
+            title: t("sharePage.deleteShare.succeedNotify"),
+          });
+        }
+      } catch (error) {
+        console.log('deleteShare error', error);
+      }
+    },
+    async updateShare(token: string, data: ShareToken) {
+      const { showNotify } = useAppNotifyStore();
+      try {
+        await shareApi.deleteShare(token);
+        await shareApi.createShare(data); 
+        await this.fetchShareData();
+      } catch (error) {
+        console.log('updateShare error', error);
         showNotify({
-          type: 'danger',
-          title: t('filePage.deleteFile.succeedNotify'),
+          type: "danger",
+          title: t("sharePage.deleteShare.failNotify"),
         });
       }
     },
