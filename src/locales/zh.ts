@@ -13,8 +13,8 @@ export default {
   },
   globalNotify: {
     refresh: {
-      succeed: '数据刷新成功！',
-      flowFailed: '刷新 {name} 流量失败！',
+      succeed: '数据刷新完成',
+      flowFailed: '刷新 {name} 失败！',
       failed: '数据刷新失败\n',
       loading: '刷新数据中...',
     },
@@ -521,8 +521,8 @@ export default {
       gistToken: '请输入 GitHub 令牌',
       defaultUserAgent: '请输入默认 User-Agent',
       defaultProxy: '请输入默认代理/策略',
-      defaultTimeout: '请输入默认超时(单位: 毫秒)',
-      cacheThreshold: '请输入缓存阈值(单位: KB)',
+      defaultTimeout: '默认超时(单位: 毫秒, 默认: 8000)',
+      cacheThreshold: '缓存阈值(单位: KB, 默认: 1024)',
       noGithubUser: '未配置 GitHub 用户名',
       noGistToken: '未配置 GitHub 令牌',
       noDefaultUserAgent: '未配置默认 User-Agent',
@@ -563,7 +563,7 @@ export default {
     storage: {
       gist: {
         label: 'Gist 同步',
-        info: '可在同步配置中将文件/订阅同步到 Gist'
+        info: '在同步配置中同步文件/订阅至 Gist'
       },
       manual: {
         label: '手动管理',
@@ -853,10 +853,12 @@ export default {
     isIC: '自定义图标使用原始颜色',
     isDefaultIcon: '恢复默认图标',
     isShowIcon: '展示图标',
+    isSubItemMenuFold: '收纳订阅页菜单功能',
     isEditorCommon: '展示编辑页常用配置',
-    isSimpleReicon: '简洁模式展示订阅刷新按钮',
+    isSimpleReicon: '简洁模式展示刷新按钮',
     isSimpleShowRemarks: '简洁模式列表展示备注',
     showFloatingRefreshButton: '显示悬浮刷新按钮',
+    showFloatingAddButton: '显示悬浮添加按钮',
     tabBar: '隐藏 "Gist 同步" 页',
     tabBar2: '隐藏 "文件" 页',
     auto2: '自定义设置 Key',
