@@ -10,6 +10,8 @@ export default {
     all: "All",
     untagged: "Untagged",
     or: "or",
+    type: "Type",
+    none: "None",
   },
   globalNotify: {
     refresh: {
@@ -17,6 +19,8 @@ export default {
       flowFailed: "Refresh of {name} failed!",
       failed: "Refresh Failed\n",
       loading: "Refreshing Data...",
+      rePwaing: 'Resetting PWA cache...',
+      rePwa: 'PWA cache reset successfully. The page will refresh soon...',
     },
   },
   // Title Bar
@@ -34,6 +38,7 @@ export default {
       editScript: "Script Edit",
       subEditor: "Subscription Editor",
       fileEditor: "File Editor",
+      preview: 'Preview',
       shareManage: "Share Manage",
       iconCollection: "Icon Collection",
       themeSetting: "Theme Setting",
@@ -72,6 +77,14 @@ export default {
       "If you are seeing this, it is probably due to a routing interception issue on the front end of your browser. You can force a refresh to see it or use the link directly without affecting the use of this link.",
   },
   filePage: {
+    type: {
+      mihomoProfile: 'Mihomo Profile',
+      mihomoProfileTips: 'Override is supported',
+      mihomoProfileTips2: 'Override(JavaScript/YAML) is supported',
+    },
+    addFileTitle: "Create File",
+    importFileTitle: "Import File data",
+    importFileTips: "On the File Management page, click the Export icon button in the More items section of a file.",
     deleteFile: {
       succeedNotify: "Successfully deleted!",
     },
@@ -81,7 +94,7 @@ export default {
     url: {
       label: "URL",
       placeholder:
-        "URL (please separate multiple urls with a new line). Supported parameters: noCache - do not use cache. For example: http://a.com#noCache",
+        "URL (please separate multiple urls with a new line). Supported parameters: noCache - do not use cache; insecure - do not verify the server certificate. For example: http://a.com#noCache&insecure",
       isEmpty: "URL cannot be empty",
       isIllegal: "Invalid URL",
     },
@@ -112,8 +125,10 @@ export default {
       label: "Import",
       succeed: "Successfully imported!",
       failed: "Failed to import!\n{e}",
+      tipsTitle: "Import Subscription data",
+      tipsContent: "On the Subscription management page, click on the Export icon button on the left/right slide of a subscription with more items.",
     },
-    addSubTitle: "Which type you want to create?",
+    addSubTitle: "Choose Subscription type",
     previewTitle: "Copy/Preview a subscription",
     tag: {
       addTagTitle: "Add Tag",
@@ -287,6 +302,7 @@ export default {
         },
         subscriptions: {
           label: "Select included subscriptions",
+          empty: 'Please create a subscription first, then use the collection feature',
         },
         content: {
           label: "Content",
@@ -311,7 +327,10 @@ export default {
         },
         subUserinfo: {
           label: "Subscription-Userinfo",
-          placeholder: "Set subscription usage info manually",
+          placeholder: "Value or URL(use response content)",
+        },
+        passThroughUA: {
+          label: 'Pass Through Request User-Agent'
         },
         proxy: {
           label: "Proxy/Policy",
@@ -371,6 +390,8 @@ export default {
           placeholder:
             "Failed to read the clipboard automatically, please paste the data manually in this text box.",
         },
+        enable: 'Enable',
+        disable: 'Disable',
       },
       nodeActions: {
         "Flag Operator": {
@@ -413,6 +434,8 @@ export default {
         },
         "Region Filter": {
           label: "Region Filter",
+          des: ["Region", "Mode"],
+          modeOptions: ["Retain", "Remove"],
           options: [
             "🇭🇰 HK",
             "🇨🇳 TW",
@@ -428,6 +451,8 @@ export default {
         },
         "Type Filter": {
           label: "Node Type Filter",
+          des: ["Type", "Mode"],
+          modeOptions: ["Retain", "Remove"],
           options: [
             "Shadowsocks",
             "ShadowsocksR",
@@ -441,9 +466,12 @@ export default {
             "Hysteria",
             "Hysteria 2",
             "Juicity",
+            "mieru",
+            "AnyTLS",
             "WireGuard",
             "SSH",
             "External Proxy Program",
+            "Direct",
           ],
           tipsTitle: "Node Type Filter Tips",
           tipsDes: "Node type filter Operation Description",
@@ -458,7 +486,8 @@ export default {
         },
         "Regex Sort Operator": {
           label: "Regex Sort",
-          des: ["Regular Expressions"],
+          des: ["Regular Expressions", "Sort of Unmatched Nodes"],
+          options: ["Ascending", "Descending", "Original"],
           placeholder: ["Regular Expressions"],
           tipsTitle: "Regex Sort Tips",
           tipsDes: "Regular sorting operation instructions",
@@ -498,21 +527,50 @@ export default {
           options: ["Link", "Script"],
           des: ["Type", "Content"],
           placeholder:
-            "Input Script Link or Internal File like /api/file/name. In addition to the parameters of the script itself, there is support for additional parameters: noCache - do not use cache. For example: http://a.com#a=1&b=2#noCache",
+            "Input Script Link or Internal File like /api/file/name. In addition to the parameters of the script itself, there is support for additional parameters: noCache - do not use cache, insecure - do not verify the server certificate. For example: http://a.com#a=1&b=2#noCache&insecure",
           openEditorBtn: "Open Code Editor",
           tipsTitle: "Script Filter Tips",
-          tipsDes: "Use a JavaScript script to modify node information",
+          tipsDes: "Use a JavaScript script to filter nodes",
+          helpTitle: 'Tips',
+          noCache: 'noCache',
+          insecure: 'insecure',
+          noCacheTips: 'When the cache is turned off, the script is refetched for each request.',
+          insecureTips: 'When the insecure is turned on, the server certificate will not be verified.',
+          paramsEditTips: 'Visual parameter editor, duplicate key names will adopt the principle of prioritizing the latter value.',
+          paramsAdd: 'Add',
+          paramsDelete: 'Delete',
+          paramsOptions: 'Options',
+          paramsEmpty: 'No parameters',
+          duplicateKeyWarning: 'Duplicate key names',
         },
         "Script Operator": {
           label: "Script Operator",
           options: ["Link", "Script"],
           des: ["Type", "Content"],
           placeholder:
-            "Input Script Link or Internal File like /api/file/name. In addition to the parameters of the script itself, there is support for additional parameters: noCache - do not use cache. For example: http://a.com#a=1&b=2#noCache",
+            "Input Script Link or Internal File like /api/file/name. In addition to the parameters of the script itself, there is support for additional parameters: noCache - do not use cache, insecure - do not verify the server certificate. For example: http://a.com#a=1&b=2#noCache&insecure",
           openEditorBtn: "Open Code Editor",
           tipsTitle: "Script Operator Tips",
-          tipsDes: "Use a JavaScript script to filter nodes",
+          tipsDes: "Use a JavaScript script to modify node information",
+          paramsEdit: 'Edit Parameters',
+          noCache: 'noCache',
+          insecure: 'insecure',
+          helpTitle: 'Tips',
+          noCacheTips: 'When the cache is turned off, the script is refetched for each request.',
+          insecureTips: 'When the insecure is turned on, the server certificate will not be verified.',
+          paramsEditTips: 'Visual parameter editor, duplicate key names will adopt the principle of prioritizing the latter value.',
+          paramsAdd: 'Add',
+          paramsDelete: 'Delete',
+          paramsOptions: 'Options',
+          paramsEmpty: 'No parameters',
+          duplicateKeyWarning: 'Duplicate key names',
         },
+      },
+      sourceNamePicker: {
+        title: 'Select Subscription Name',
+        cancel: 'Cancel',
+        confirm: 'Confirm',
+        emptyTips: 'Subscription not found? Click to add a subscription',
       },
     },
   },
@@ -792,6 +850,7 @@ export default {
     selectCollectionBtn: "Select a icon collection",
     more: "More",
     useCustomIconCollection: "Use Custom Icon Collection",
+    resetDefaultIconCollection: "Reset Default",
     collectionPicker: {
       title: "Select a icon collection",
       cancel: "Cancel",
@@ -870,6 +929,7 @@ export default {
     isSimpleShowRemarks: "Simple Mode Show items remarks",
     showFloatingRefreshButton: "Show floating refresh button",
     showFloatingAddButton: "Show floating add button",
+    displayPreviewInWebPage: 'Display preview in web page',
     tabBar: 'Hide "Sync" Page',
     tabBar2: 'Hide "File" Page',
     auto2: "MoreSetting Key",

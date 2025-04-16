@@ -229,7 +229,7 @@
           <font-awesome-icon icon="fa-solid fa-paste" />
         </nut-button>
       </div>
-      <div v-if="type === 'sub'" class="sub-item-swipe-btn-wrapper">
+      <div class="sub-item-swipe-btn-wrapper">
         <a
           :href="`${host}/api/${props.type}/${encodeURIComponent(name)}?raw=1`"
           target="_blank"
@@ -269,7 +269,7 @@
           <font-awesome-icon icon="fa-solid fa-paste" />
         </nut-button>
       </div>
-      <div v-if="type === 'sub'" class="sub-item-swipe-btn-wrapper">
+      <div class="sub-item-swipe-btn-wrapper">
         <a
           :href="`${host}/api/${props.type}/${encodeURIComponent(name)}?raw=1`"
           target="_blank"
@@ -532,7 +532,7 @@ const flow = computed(() => {
         };
       } else {
         return {
-          firstLine: `${target.error?.type}`,
+          firstLine: `⚠️ ${target.error?.type}`,
           secondLine: `${target.error?.message}`,
         };
       }
@@ -656,6 +656,7 @@ const onClickPreviews = () => {
     title: t("subPage.previewTitle"),
     content: createVNode(PreviewPanel, {
       name,
+      displayName,
       type: props.type,
       general: t("subPage.panel.general"),
       notify: t("subPage.copyNotify.succeed"),

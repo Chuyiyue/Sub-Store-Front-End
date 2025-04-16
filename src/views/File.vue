@@ -5,6 +5,60 @@
     @touchmove="onTouchMove"
     @touchend="onTouchEnd"
   >
+    <!-- 添加订阅弹窗 -->
+    <!-- lock-scroll -->
+    <div>
+      <nut-popup
+        v-model:visible="addSubBtnIsVisible"
+        pop-class="add-sub-popup"
+        position="bottom"
+        :style="{
+          height: `${bottomSafeArea + 200}px`,
+          padding: '20px 12px 0 12px',
+        }"
+        close-icon="close-little"
+        z-index="11000"
+        closeable
+        round
+      >
+        <div class="title-btn">
+          <p class="add-sub-panel-title">{{ $t(`filePage.addFileTitle`) }}</p>
+          <p class="add-sub-panel-title or">{{ $t(`specificWord.or`) }}</p>
+          <input type="file" ref="fileInput" accept="application/json,text/json,.json" @change="fileChange" style="display: none">
+          <nut-button
+            class="upload-btn"
+            plain
+            type="primary"
+            size="small"
+            :disabled="restoreIsLoading"
+            :loading="restoreIsLoading"
+            @click="upload()"
+          >
+            <font-awesome-icon
+              icon="fa-solid fa-file-import"
+              v-if="!uploadIsLoading"
+            />
+            {{ $t(`subPage.import.label`) }}
+          </nut-button>
+          <nut-icon name="tips" @click="importTips"></nut-icon>
+        </div>
+        <ul class="add-sub-panel-list">
+          <li>
+            <router-link to="/edit/files/UNTITLED" class="router-link">
+              <svg-icon name="file" />
+              <span>{{ $t(`specificWord.file`) }}</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/edit/files/UNTITLED-mihomoProfile" class="router-link">
+              <img src="@/assets/icons/clashmeta_color.png" alt="">
+              <span>{{ $t(`filePage.type.mihomoProfile`) }}</span>
+              <small>{{ $t(`filePage.type.mihomoProfileTips`) }}</small>
+            </router-link>
+          </li>
+        </ul>
+      </nut-popup>
+    </div>
     <!-- 浮动按钮 -->
     <Teleport to="body">
       <div v-if="hasFiles" class="drag-btn-wrapper">
@@ -18,11 +72,10 @@
           }"
           :style="{
             cursor: 'pointer',
-            left: '16px',
+            left: '15px',
             bottom: `${
               bottomSafeArea +
-              48 +
-              36 +
+              48 + 36 + 
               (!isMobile() ? (appearanceSetting.isSimpleMode ? 44 : 48) : 0)
             }px`,
           }"
@@ -95,11 +148,11 @@
           <p>{{ $t(`filePage.emptySub.desc`) }}</p>
         </template>
       </nut-empty>
-      <router-link to="/edit/files/UNTITLED" class="router-link">
-        <nut-button type="primary">
+      <!-- <router-link to="/edit/files/UNTITLED" class="router-link"> -->
+        <nut-button type="primary" @click="addSubBtnIsVisible = true">
           {{ $t(`filePage.emptySub.btn`) }}
         </nut-button>
-      </router-link>
+      <!-- </router-link> -->
     </div>
 
     <!-- 数据加载失败 -->
@@ -146,9 +199,10 @@ import draggable from "vuedraggable";
 import SharePopup from "./share/SharePopup.vue";
 
 import { useAppNotifyStore } from "@/store/appNotify";
-// import { Dialog, Toast } from '@nutui/nutui';
+import { Dialog, Toast } from '@nutui/nutui';
 
 import { useSubsApi } from "@/api/subs";
+import { useFilesApi } from '@/api/files';
 import FileListItem from "@/components/FileListItem.vue";
 import { useGlobalStore } from "@/store/global";
 import { useSubsStore } from "@/store/subs";
@@ -177,7 +231,7 @@ const enTa = () => {
 
 const editFile = () => {
   if (as.value) return;
-  router.push("/edit/files/UNTITLED");
+  addSubBtnIsVisible.value = true;
 };
 
 onMounted(() => {
@@ -186,7 +240,12 @@ onMounted(() => {
 const { env } = useBackend();
 const { showNotify } = useAppNotifyStore();
 const subApi = useSubsApi();
+const filesApi = useFilesApi();
 const { t } = useI18n();
+const fileInput = ref(null);
+const uploadIsLoading = ref(false);
+const restoreIsLoading = ref(false);
+const addSubBtnIsVisible = ref(false);
 const subsStore = useSubsStore();
 const globalStore = useGlobalStore();
 const settingsStore = useSettingsStore();
@@ -280,9 +339,85 @@ const handleShare = (element, type) => {
   };
   sharePopupVisible.value = true;
 };
+const upload = async() => {
+  try {
+    fileInput.value.click()
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+const fileChange = async (event) => {
+  const file = event.target.files[0];
+  if(!file) return
+  try {
+    restoreIsLoading.value = true;
+    const reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = async () => {
+      const item = JSON.parse(String(reader.result))
+      const suffix = new Date().getTime()
+      item.name += `_${suffix}`
+      item.displayName += `_${suffix}`
+      item['display-name'] = item.displayName
+      const res = await filesApi.createFile(item);
+      // await subsStore.fetchSubsData();
+      
+      // const res = await useSettingsApi().restoreSettings({ content: String(reader.result) });
+      if (res?.data?.status === "success") {
+        await initStores(false, true, true);
+        showNotify({
+          type: "success",
+          title: t(`subPage.import.succeed`),
+        });
+        addSubBtnIsVisible.value = false
+      } else {
+        throw new Error('restore failed')
+      }
+    }
+
+    reader.onerror = e => {
+      throw e
+    }
+    
+  } catch (e) {
+    showNotify({
+      type: "danger",
+      title: t(`subPage.import.failed`, { e: e.message ?? e }),
+    });
+    console.error(e);
+  } finally {
+    restoreIsLoading.value = false;
+  }
+};
+const importTips = () => {
+  addSubBtnIsVisible.value = false
+  Dialog({
+      title: t(`filePage.importFileTitle`),
+      content: t(`filePage.importFileTips`),
+      popClass: 'auto-dialog',
+      okText: 'OK',
+      noCancelBtn: true,
+      closeOnPopstate: true,
+      lockScroll: false,
+    });
+};
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+  .title-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+    .nut-icon {
+      color: var(--comment-text-color);
+    }
+    :deep(.nut-icon-tips:before) {
+      cursor: pointer;
+      margin-left: 4px;
+    }
+  }
 .drag-btn-wrapper {
   position: relative;
   z-index: 999;
@@ -317,16 +452,32 @@ const handleShare = (element, type) => {
 .add-sub-popup {
   background-color: var(--popup-color);
   // position: relative;
-
+  .title-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+    .nut-icon {
+      color: var(--comment-text-color);
+    }
+    :deep(.nut-icon-tips:before) {
+      cursor: pointer;
+      margin-left: 4px;
+    }
+  }
   .add-sub-panel-title {
-    width: 100%;
+    width: auto;
     text-align: center;
     font-size: 16px;
-    color: var(--comment-text-color);
+    color: var(--second-text-color);
+    &.or {
+      margin: 0 4px;
+      color: var(--comment-text-color);
+    }
   }
 
   .add-sub-panel-list {
-    padding: 16px 0;
+    padding: 10px 0;
     font-size: 16px;
     font-weight: bold;
     display: flex;
@@ -334,7 +485,7 @@ const handleShare = (element, type) => {
     color: var(--second-text-color);
 
     > li {
-      width: 50%;
+      flex: 1;
       display: flex;
       justify-content: center;
 
@@ -343,13 +494,20 @@ const handleShare = (element, type) => {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start;
 
-        > svg {
+        > svg, > img {
           width: 44px;
           height: 44px;
           color: var(--primary-color);
           margin-bottom: 12px;
+        }
+        span {
+          font-size: 14px;
+        }
+        small {
+          font-size: 12px;
+          color: var(--comment-text-color);
         }
       }
     }

@@ -10,6 +10,8 @@ export default {
     all: '全部',
     untagged: '未分组',
     or: '或',
+    type: '类型',
+    none: '无',
   },
   globalNotify: {
     refresh: {
@@ -17,6 +19,8 @@ export default {
       flowFailed: '刷新 {name} 失败！',
       failed: '数据刷新失败\n',
       loading: '刷新数据中...',
+      rePwa: '重置 PWA 缓存成功，即将刷新页面...',
+      rePwaing: '重置 PWA 缓存中...',
     },
     share: {
       title: '分享',
@@ -62,6 +66,7 @@ export default {
       editScript: '脚本编辑',
       subEditor: '订阅编辑',
       fileEditor: '文件编辑',
+      preview: '预览',
       shareManage: '分享管理',
       iconCollection: '图标仓库',
       themeSetting: '主题设置',
@@ -99,6 +104,14 @@ export default {
     backendDesc: '如果你看到这个 可能是因为浏览器前端路由拦截的问题 可以强制刷新查看或直接使用该链接 不影响此链接的使用',
   },
   filePage: {
+    type: {
+      mihomoProfile: 'Mihomo 配置',
+      mihomoProfileTips: '可使用覆写',
+      mihomoProfileTips2: '可使用 JavaScript/YAML 覆写',
+    },
+    addFileTitle: '创建文件',
+    importFileTitle: '导入 Sub-Store 文件数据',
+    importFileTips: '文件管理页面, 在某个文件左滑/右滑的更多项中, 点击导出图标按钮',
     deleteFile: {
       succeedNotify: '删除文件成功',
     },
@@ -107,7 +120,7 @@ export default {
     },
     url: {
       label: '链接',
-      placeholder: '链接(多个链接请换行) 支持参数: noCache 不使用缓存. 例: http://a.com#noCache',
+      placeholder: '链接(多个链接请换行) 支持参数: noCache 不使用缓存; insecure 不验证服务器证书. 例: http://a.com#noCache&insecure',
       isEmpty: '链接不能为空',
       isIllegal: '链接格式非法',
     },
@@ -137,6 +150,8 @@ export default {
       label: '导入',
       succeed: '导入成功',
       failed: '导入失败\n{e}',
+      tipsTitle: '导入 Sub-Store 订阅数据',
+      tipsContent: '订阅管理页面, 在某个订阅左滑/右滑的更多项中, 点击导出图标按钮',
     },
     addSubTitle: '选择要创建的订阅类型',
     previewTitle: '预览/拷贝订阅',
@@ -307,6 +322,7 @@ export default {
         },
         subscriptions: {
           label: '手动选择的订阅',
+          empty: '请先创建单条订阅, 再使用组合订阅功能',
         },
         content: {
           label: '内容',
@@ -329,7 +345,10 @@ export default {
         },
         subUserinfo: {
           label: '订阅流量信息',
-          placeholder: '手动设置订阅流量信息',
+          placeholder: '填写值或链接(使用响应内容)',
+        },
+        passThroughUA: {
+          label: '透传请求的 User-Agent'
         },
         proxy: {
           label: '代理/策略',
@@ -388,16 +407,30 @@ export default {
           label: '从剪贴板导入',
           placeholder: '自动读取剪贴板失败, 请在此文本框内手动粘贴数据'
         },
+        enable: '启用',
+        disable: '禁用',
       },
       nodeActions: {
         'Script Operator': {
           label: '脚本操作',
           options: ['链接', '脚本'],
           des: ['类型', '内容'],
-          placeholder: '填入完整远程脚本链接 或 类似 /api/file/name 的内部文件调用路径. 除了脚本本身的参数外, 支持叠加参数: noCache 不使用缓存. 例: http://a.com#a=1&b=2#noCache',
+          placeholder: '填入完整远程脚本链接 或 类似 /api/file/name 的内部文件调用路径. 除了脚本本身的参数外, 支持叠加参数: noCache 不使用缓存, insecure 不验证服务器证书. 例: http://a.com#a=1&b=2#noCache&insecure',
           openEditorBtn: '打开脚本编辑器',
           tipsTitle: '脚本操作操作提示',
           tipsDes: '使用一段 JavaScript 脚本来修改节点信息',
+          paramsEdit: '参数编辑',
+          noCache: '关闭缓存',
+          insecure: '不验证服务器证书',
+          helpTitle: '温馨提示',
+          noCacheTips: '关闭缓存后, 每次请求都会重新获取脚本内容',
+          paramsEditTips: '可视化参数编辑器，重复键名将采用后值优先原则',
+          paramsAdd: '添加参数',
+          paramsDelete: '删除',
+          paramsOptions: '操作',
+          paramsEmpty: '暂无参数数据',
+          duplicateKeyWarning: '重复的键名',
+          insecureTips: '开启后，将不对服务器证书进行验证。',
         },
         'Flag Operator': {
           label: '旗帜操作',
@@ -426,12 +459,16 @@ export default {
         },
         'Region Filter': {
           label: '区域过滤',
+          des: ['区域', '工作模式'],
+          modeOptions: ['保留模式', '过滤模式'],
           options: ['🇭🇰 HK', '🇨🇳 TW', '🇸🇬 SG', '🇯🇵 JP', '🇬🇧 UK', '🇺🇸 US', '🇩🇪 DE', '🇰🇷 KR'],
           tipsTitle: '区域过滤操作提示',
           tipsDes: '按照国家和区域过滤节点',
         },
         'Type Filter': {
           label: '协议过滤',
+          des: ['协议', '工作模式'],
+          modeOptions: ['保留模式', '过滤模式'],
           options: [
             'Shadowsocks',
             'ShadowsocksR',
@@ -445,9 +482,12 @@ export default {
             'Hysteria',
             'Hysteria 2',
             'Juicity',
+            'mieru',
+            'AnyTLS',
             'WireGuard',
             'SSH',
             'External Proxy Program',
+            "Direct",
           ],
           tipsTitle: '节点类型过滤操作提示',
           tipsDes: '按照代理协议类型过滤节点',
@@ -463,7 +503,8 @@ export default {
         },
         'Regex Sort Operator': {
           label: '正则排序',
-          des: ['正则表达式'],
+          des: ['正则表达式', '未匹配节点排序方式'],
+          options: ['正序', '逆序', '不变'],
           placeholder: ['填入正则表达式'],
           tipsTitle: '正则排序操作提示',
           tipsDes:
@@ -503,11 +544,28 @@ export default {
           label: '脚本过滤',
           options: ['链接', '脚本'],
           des: ['类型', '内容'],
-          placeholder: '填入完整远程脚本链接 或 类似 /api/file/name 的内部文件调用路径. 除了脚本本身的参数外, 支持叠加参数: noCache 不使用缓存. 例: http://a.com#a=1&b=2#noCache',
+          placeholder: '填入完整远程脚本链接 或 类似 /api/file/name 的内部文件调用路径. 除了脚本本身的参数外, 支持叠加参数: noCache 不使用缓存, insecure 不验证服务器证书. 例: http://a.com#a=1&b=2#noCache&insecure',
           openEditorBtn: '打开脚本编辑器',
           tipsTitle: '脚本过滤器操作提示',
           tipsDes: '使用一段 JavaScript 脚本来过滤节点',
+          paramsEdit: '参数编辑',
+          noCache: '关闭缓存',
+          insecure: '不验证服务器证书',
+          helpTitle: '温馨提示',
+          noCacheTips: '关闭缓存后, 每次请求都会重新获取脚本内容',
+          paramsEditTips: '可视化参数编辑器，重复键名将采用后值优先原则',
+          paramsAdd: '添加参数',
+          paramsDelete: '删除',
+          paramsOptions: '操作',
+          paramsEmpty: '暂无参数数据',
+          duplicateKeyWarning: '重复的键名',
         },
+      },
+      sourceNamePicker: {
+        title: '选择订阅名称',
+        cancel: '取消',
+        confirm: '确定',
+        emptyTips: '未找到订阅？点击去添加订阅',
       },
     },
   },
@@ -780,6 +838,7 @@ export default {
     selectCollectionBtn: '切换图标仓库',
     more: '更多',
     useCustomIconCollection: '使用自定义仓库',
+    resetDefaultIconCollection: '恢复默认',
     collectionPicker: {
       title: '选择一个图标仓库',
       cancel: '取消',
@@ -859,6 +918,7 @@ export default {
     isSimpleShowRemarks: '简洁模式列表展示备注',
     showFloatingRefreshButton: '显示悬浮刷新按钮',
     showFloatingAddButton: '显示悬浮添加按钮',
+    displayPreviewInWebPage: '在网页中预览',
     tabBar: '隐藏 "Gist 同步" 页',
     tabBar2: '隐藏 "文件" 页',
     auto2: '自定义设置 Key',

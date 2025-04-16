@@ -133,6 +133,20 @@
           <font-awesome-icon icon="fa-solid fa-paste" />
         </nut-button>
       </div>
+      <div class="sub-item-swipe-btn-wrapper">
+        <!-- <a
+          :href="`${host}/api/wholeFile/${encodeURIComponent(name)}?raw=1`"
+          target="_blank"
+        > -->
+        <nut-button
+          shape="square"
+          type="success"
+          class="sub-item-swipe-btn"
+          @click="onClickExportFile(name)"
+        >
+          <font-awesome-icon icon="fa-solid fa-file-export" />
+        </nut-button>
+      </div>
       <!-- preview -->
       <!-- <div class="sub-item-swipe-btn-wrapper">
         <nut-button shape="square" type="success" class="sub-item-swipe-btn" @click="onClickPreview">
@@ -161,6 +175,16 @@
           @click="onClickCopyConfig"
         >
           <font-awesome-icon icon="fa-solid fa-paste" />
+        </nut-button>
+      </div>
+      <div class="sub-item-swipe-btn-wrapper">
+        <nut-button
+          shape="square"
+          type="success"
+          class="sub-item-swipe-btn"
+          @click="onClickExportFile(name)"
+        >
+          <font-awesome-icon icon="fa-solid fa-file-export" />
         </nut-button>
       </div>
       <!-- <div class="sub-item-swipe-btn-wrapper">
@@ -212,6 +236,7 @@
   import { useRouter, useRoute } from 'vue-router';
   import { useHostAPI } from '@/hooks/useHostAPI';
   import { useBackend } from "@/hooks/useBackend";
+  import clashmetaIcon from '@/assets/icons/clashmeta_color.png';
 
   const { copy, isSupported } = useClipboard();
   const { toClipboard: copyFallback } = useV3Clipboard();
@@ -267,6 +292,7 @@
   })
   const { flows } = storeToRefs(subsStore);
   const icon = computed(() => {
+    if (props.file.type === 'mihomoProfile') return clashmetaIcon;
     return appearanceSetting.value.isDefaultIcon ? logoIcon : logoRedIcon;
   })
   const collectionDetail = computed(() => {
@@ -285,6 +311,7 @@
   });
 
   const flow = computed(() => {
+    if (props.file.type === 'mihomoProfile') return t('filePage.type.mihomoProfile');
     if (props.file.source === 'remote') return t('filePage.source.remote');
     return t('filePage.source.local');
   });
@@ -402,6 +429,14 @@
   const shareBtnVisible = computed(() => {
     return env.value?.feature?.share;
   });
+
+  const onClickExportFile = (name) => {
+    swipeClose();
+    const url = `${host.value}/api/wholeFile/${encodeURIComponent(name)}?raw=1`;
+    console.log('url', url);
+    window.open(url, '_blank');  // 在新窗口中打开链接
+  };
+
   const onClickShareLink = async () => {
     console.log('props', props)
     const type = props.type;

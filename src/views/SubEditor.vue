@@ -200,6 +200,16 @@
           </nut-form-item>
           <!-- ua -->
           <nut-form-item
+            :label="$t(`editorPage.subConfig.basic.passThroughUA.label`)"
+            prop="passThroughUA"
+            class="ignore-failed-wrapper"
+            v-if="form.source === 'remote'"
+          >
+            <div class="switch-wrapper">
+              <nut-switch v-model="form.passThroughUA" />
+            </div>
+          </nut-form-item>
+          <nut-form-item
             :label="$t(`editorPage.subConfig.basic.ua.label`)"
             prop="ua"
             v-if="form.source === 'remote'"
@@ -339,7 +349,24 @@
               </nut-checkbox>
             </nut-checkboxgroup>
             </nut-form-item>
-              <nut-form-item
+            <nut-form-item
+              :label="$t(`editorPage.subConfig.basic.subUserinfo.label`)"
+              prop="subUserinfo"
+            >
+              <nut-input
+                :border="false"
+                class="nut-input-text"
+                v-model.trim="form.subUserinfo"
+                :placeholder="
+                  $t(`editorPage.subConfig.basic.subUserinfo.placeholder`)
+                "
+                type="text"
+                input-align="right"
+                left-icon="tips"
+                @click-left-icon="subUserinfoTips"
+              />
+            </nut-form-item>
+            <nut-form-item
               :label="$t(`editorPage.subConfig.basic.proxy.label`)"
               prop="proxy"
             >
@@ -379,6 +406,7 @@
       @updateCustomNameModeFlag="updateCustomNameModeFlag"
       @addAction="addAction"
       @deleteAction="deleteAction"
+      @toggleAction="toggleAction"
     />
   </div>
 
@@ -434,7 +462,7 @@ import { useAppNotifyStore } from "@/store/appNotify";
 import { useGlobalStore } from "@/store/global";
 import { useSettingsStore } from '@/store/settings';
 import { useSubsStore } from "@/store/subs";
-import { addItem, deleteItem } from "@/utils/actionsOperate";
+import { addItem, deleteItem, toggleItem } from "@/utils/actionsOperate";
 import { actionsToProcess } from "@/utils/actionsToPorcess";
 import { initStores } from "@/utils/initApp";
 import CompareTable from "@/views/CompareTable.vue";
@@ -544,7 +572,7 @@ const padding = bottomSafeArea.value + "px";
     }
   };
   const selectedSubs = computed(() => {
-    if(!Array.isArray(form.subscriptions) || form.subscriptions.length === 0) return ''
+    if(!Array.isArray(form.subscriptions) || form.subscriptions.length === 0) return `: ${t(`editorPage.subConfig.basic.subscriptions.empty`)}`
     return `: ${form.subscriptions.map((name) => {
       const sub = subsStore.getOneSub(name);
       return sub?.displayName || sub?.["display-name"] || sub.name;
@@ -568,6 +596,7 @@ const form = reactive<any>({
   remark: "",
   mergeSources: "",
   ignoreFailedRemoteSub: false,
+  passThroughUA: false,
   icon: "",
   process: [
     {
@@ -611,6 +640,7 @@ watchEffect(() => {
   const newProcess = JSON.parse(JSON.stringify(sourceData.process));
   form.mergeSources = sourceData.mergeSources;
   form.ignoreFailedRemoteSub = sourceData.ignoreFailedRemoteSub;
+  form.passThroughUA = sourceData.passThroughUA;
   form.name = sourceData.name;
   form.displayName = sourceData.displayName || sourceData["display-name"];
   form.remark = sourceData.remark;
@@ -641,7 +671,7 @@ watchEffect(() => {
 
   if (sourceData.process.length > 0) {
     form.process.forEach((item) => {
-      const { type, id, customName } = item;
+      const { type, id, customName, disabled } = item;
 
       if (!ignoreList.includes(type)) {
         actionsChecked.push([id, true]);
@@ -651,6 +681,7 @@ watchEffect(() => {
           customName,
           tipsDes: t(`editorPage.subConfig.nodeActions['${type}'].tipsDes`),
           component: null,
+          enabled: !disabled,
         };
         switch (type) {
           case "Flag Operator":
@@ -693,6 +724,10 @@ const addAction = (val) => {
 
 const deleteAction = (id) => {
   deleteItem(form, actionsList, actionsChecked, id);
+};
+
+const toggleAction = (id) => {
+  toggleItem(actionsList, id);
 };
 
 const closeCompare = () => {
@@ -948,8 +983,8 @@ const urlValidator = (val: string): Promise<boolean> => {
   // 去除空格
   const strTrim = (prop: string) => {
     if (typeof form[prop] === "string") {
-      // 正则表达式去除首尾空格,
-      form[prop] = form[prop].replace(/[^\S\r\n]+/g, '')
+      // 去除首尾空格
+      form[prop] = form[prop].trim();
     }
   }
   // 图标
@@ -985,7 +1020,7 @@ const urlValidator = (val: string): Promise<boolean> => {
   const subUserinfoTips = () => {
     Dialog({
         title: '手动设置订阅流量信息',
-        content: '格式:\n\nupload=1024; download=10240; total=102400; expire=4115721600; reset_day=14; plan_name=VIP1; app_url=http://a.com\n\n1. app_url, 订阅将有一个可点击跳转的按钮\n\n2. plan_name, hover 时将显示套餐名称\n\n3. reset_day, 流量重置剩余天数(若要设置周期性重置, 可查看订阅链接中的参数说明)\n\n⚠️ 注意: 手动设置的订阅流量信息会附加到订阅自己的流量信息之前. 若包含不合法的内容, 订阅将无法正常使用\n\n例如: http://官网.com 应编码为 http%3A%2F%2F%E5%AE%98%E7%BD%91.com',
+        content: '若填写链接, 则使用链接的响应内容作为值.\n\n此项值的格式为:\n\nupload=1024; download=10240; total=102400; expire=4115721600; reset_day=14; plan_name=VIP1; app_url=http://a.com\n\n1. app_url, 订阅将有一个可点击跳转的按钮\n\n2. plan_name, hover 时将显示套餐名称\n\n3. reset_day, 流量重置剩余天数(若要设置周期性重置, 可查看订阅链接中的参数说明)\n\n⚠️ 注意: 手动设置的订阅流量信息会附加到订阅自己的流量信息之前. 若包含不合法的内容, 订阅将无法正常使用\n\n例如: http://官网.com 应编码为 http%3A%2F%2F%E5%AE%98%E7%BD%91.com',
         popClass: 'auto-dialog',
         okText: 'OK',
         noCancelBtn: true,

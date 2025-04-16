@@ -15,13 +15,12 @@
             <img :src="platform.icon" class="auto-reverse" />
           </div>
           <p>{{ platform.name }}</p>
-          <!-- <nut-icon name="tips" v-if="platform.name === 'Surge'" @click="tips"></nut-icon>
-          <nut-icon name="tips" v-if="platform.name === general" @click="tips"></nut-icon> -->
+          <nut-icon name="tips" v-if="platform.path === 'SurgeMac'" @click="tips"></nut-icon>
         </div>
 
         <div class="actions">
           <a
-            :href="getUrl(platform.path)"
+            :href="getUrl(platform.path, appearanceSetting.displayPreviewInWebPage)"
             target="_blank"
           >
             <svg-icon
@@ -66,17 +65,25 @@
   import { useAppNotifyStore } from '@/store/appNotify';
   import SvgIcon from '@/components/SvgIcon.vue';
   import { useHostAPI } from '@/hooks/useHostAPI';
+  import { storeToRefs } from "pinia";
+  import { useSettingsStore } from '@/store/settings';
+
+  const settingsStore = useSettingsStore();
+  const { changeAppearanceSetting } = settingsStore;
+  const { appearanceSetting } = storeToRefs(settingsStore);
 
   const includeUnsupportedProxy = ref(false);
   const { copy, isSupported } = useClipboard();
   const { toClipboard: copyFallback } = useV3Clipboard();
   const { showNotify } = useAppNotifyStore();
-  const { name, type, general, notify, tipsTitle, tipsContent, desc,tipsCancelText, tipsOkText } = defineProps<{
+  const { name, displayName, type, url, general, notify, tipsTitle, tipsContent, desc,tipsCancelText, tipsOkText } = defineProps<{
     name: string;
+    displayName?: string;
     type: 'sub' | 'collection';
     general: string;
     notify: string;
     desc: string;
+    url?: string;
     tipsTitle?: string;
     tipsContent?: string;
     tipsCancelText?: string;
@@ -84,13 +91,41 @@
   }>();
 
   const { currentUrl: host } = useHostAPI();
-  const getUrl = (path: string) => {
-    const query = {} as Record<string, string | boolean>
-    if(path !== null) query.target = path;
-    if(includeUnsupportedProxy.value) query.includeUnsupportedProxy = true;
-    return `${host.value}/download/${
-      type === 'sub' ? '' : 'collection/'
-    }${encodeURIComponent(name)}${Object.keys(query).length > 0 ? `?${Object.entries(query).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&')}` : ''}`;
+
+  const buildUrlWithQuery = (url: string, query: Record<string, string | boolean>): string => {
+    if (!url) {
+      return '';
+    }
+    const queryString = Object.entries(query)
+      .filter(([_, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join('&');
+      
+    if (!queryString) {
+      return url;
+    }
+    
+    const hasQueryParams = url.includes('?');
+    return `${url}${hasQueryParams ? '&' : '?'}${queryString}`;
+  };
+
+  const getUrl = (path: string, preview: boolean = false) => {
+    const query = {} as Record<string, string | boolean>;
+    if (path !== null) {
+      query.target = path;
+    }
+    if (includeUnsupportedProxy.value) {
+      query.includeUnsupportedProxy = true;
+    }
+    let previewUrl
+    if (url) {
+      previewUrl = buildUrlWithQuery(url, query);
+    } else {
+      previewUrl = `${host.value}/download/${
+        type === "sub" ? "" : "collection/"
+        }${encodeURIComponent(name)}${Object.keys(query).length > 0 ? `?${Object.entries(query).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&')}` : ''}`; 
+    }
+    return preview ? `/preview?url=${encodeURIComponent(previewUrl)}&name=${encodeURIComponent(displayName || name)}` : previewUrl
   }
   const targetCopy = async (path: string) => {
     const url = getUrl(path);
@@ -113,7 +148,7 @@
       icon: stash,
     },
     {
-      name: 'Clash.Meta(mihomo)',
+      name: 'Mihomo',
       path: 'ClashMeta',
       icon: clashmeta,
     },
